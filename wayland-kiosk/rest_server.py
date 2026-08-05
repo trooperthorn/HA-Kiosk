@@ -206,7 +206,7 @@ async def main():
     site = web.TCPSite(runner, '0.0.0.0', 8034, reuse_address=True)
     await site.start()
     
-    logging.info("API listening on port 8080. Ready for Home Assistant commands.")
+    logging.info("API listening on port 8034. Ready for Home Assistant commands.")
     
     # Run forever
     await asyncio.Event().wait()
