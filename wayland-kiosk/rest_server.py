@@ -35,7 +35,7 @@ headers = {
 }
 
 # The Python script sends the Bearer token, so it will NOT get a 401 error!
-response = requests.post(API_URL, headers=headers, json={"entity_id": "light.kitchen"})
+response = requests.post(API_URL, headers=headers, json={"entity_id": "sun.sun"})
 
 
 def register_function(name, optional=None, required=None, validators=None):
