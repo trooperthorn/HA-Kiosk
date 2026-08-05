@@ -1,6 +1,6 @@
 name: "HAOS Wayland Kiosk"
 description: "A Wayland-native kiosk dashboard using Cage and Chromium"
-version: "1.0.0"
+version: "1.0.1"
 slug: "haos_wayland_kiosk"
 init: false
 startup: application
@@ -23,11 +23,18 @@ video: true
 udev: true
 audio: true
 usb: true
-privileged:
-  - SYS_ADMIN
-devices:
-  - /dev/input:/dev/input
-  - /dev/dri:/dev/dri
+full_access: true
+
+# Storage and Limits
+map:
+  - addon_config:rw
+  - media:rw
+  
+#privileged:
+#  - SYS_ADMIN
+#devices:
+#  - /dev/input:/dev/input
+#  - /dev/dri:/dev/dri
 
 # Storage and Limits
 map:
