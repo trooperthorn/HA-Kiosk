@@ -65,7 +65,9 @@ fi
 unset DISPLAY
 unset WAYLAND_DISPLAY
 export WLR_BACKEND=drm
-export WLR_LIBINPUT_NO_DEVICES=1
+# Earlier troubleshooting, we added export WLR_LIBINPUT_NO_DEVICES=1 to prevent wlroots from crashing if no devices were plugged in. 
+# However, this flag completely disables libinput—meaning it is intentionally ignoring your touchscreen!
+# export WLR_LIBINPUT_NO_DEVICES=1
 
 # ---------------------------------------------------------
 # READ UI OPTIONS (WITH BULLETPROOF FALLBACKS)
@@ -91,19 +93,27 @@ if [ -z "$ROTATION_CONFIG" ] || [ "$ROTATION_CONFIG" == "null" ]; then
 fi
 # ---------------------------------------------------------
 
-# Map rotation values to Wayland transforms
+# Map rotation values for wlr-randr
 case $ROTATION_CONFIG in
-    "normal") export WLR_OUTPUT_TRANSFORM="normal" ;;
-    "right") export WLR_OUTPUT_TRANSFORM="90" ;;
-    "inverted") export WLR_OUTPUT_TRANSFORM="180" ;;
-    "left") export WLR_OUTPUT_TRANSFORM="270" ;;
-    *) export WLR_OUTPUT_TRANSFORM="normal" ;;
+    "right") ROTATION_DEGREES="90" ;;
+    "inverted") ROTATION_DEGREES="180" ;;
+    "left") ROTATION_DEGREES="270" ;;
+    *) ROTATION_DEGREES="normal" ;;
 esac
+
+# Run rotation in the background (waits 5 seconds for Cage to start)
+if [ "$ROTATION_DEGREES" != "normal" ]; then
+    bashio::log.info "Scheduling screen rotation to ${ROTATION_DEGREES} degrees..."
+    (
+        sleep 5
+        wlr-randr --output \* --transform "$ROTATION_DEGREES"
+    ) &
+fi
 
 # ... (The rest of your script starting Chromium remains the same) ...
 
 # Build Chromium Ozone flags
-CHROMIUM_FLAGS="--kiosk --no-sandbox --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-infobars --remote-debugging-port=9222"
+CHROMIUM_FLAGS="--kiosk --no-sandbox --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-infobars --remote-debugging-port=9222 --no-first-run --disable-sync --bwsi"
 
 if bashio::config.true 'ignore_certificate_errors'; then
     CHROMIUM_FLAGS="${CHROMIUM_FLAGS} --ignore-certificate-errors"
