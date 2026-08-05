@@ -1,6 +1,9 @@
 # HAOS Wayland Kiosk
 - VT Binding update
-A streamlined, hardware-accelerated kiosk integration for Home Assistant Operating System.
+- Chrome Loaded, now lets get touchy
+
+
+## A streamlined, hardware-accelerated kiosk integration for Home Assistant Operating System.
 
 By replacing the aging X11 stack with a direct Wayland compositor (Cage), this add-on provides a robust, tear-free environment for rendering Chromium dashboards on your local hardware.
 
