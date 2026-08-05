@@ -202,8 +202,8 @@ async def main():
     runner = web.AppRunner(app)
     await runner.setup()
     
-    # Bind to port 8080
-    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    # Bind to port 8080 with socket reuse enabled to prevent port-lock crashes on restart
+    site = web.TCPSite(runner, '0.0.0.0', 8034, reuse_address=True)
     await site.start()
     
     logging.info("API listening on port 8080. Ready for Home Assistant commands.")
