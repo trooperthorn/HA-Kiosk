@@ -38,20 +38,28 @@ export XDG_RUNTIME_DIR=/tmp/xdg
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
-# Clean residual display env vars that force wlroots into nested mode
+# Start seatd to manage DRM/GPU access in Docker
+bashio::log.info "Starting seat management daemon..."
+mkdir -p /run
+seatd -g root &
+export SEATD_SOCK=/run/seatd.sock
+export LIBSEAT_BACKEND=seatd
+sleep 1 # Give seatd a moment to create the socket
+
+# Clean residual display env vars
 unset DISPLAY
 unset WAYLAND_DISPLAY
-
-# FORCE wlroots to use direct hardware DRM/KMS instead of searching for a parent Wayland server
 export WLR_BACKEND=drm
-# Prevent wlroots from crashing if no physical mouse/keyboard is plugged in
 export WLR_LIBINPUT_NO_DEVICES=1
 
-# Read UI options
+# Read UI options with fallback defaults
 URL=$(bashio::config 'ha_url')
 ROTATION_CONFIG=$(bashio::config 'rotate_display')
 IGNORE_CERTS=$(bashio::config 'ignore_certificate_errors')
 SCREEN_TIMEOUT=$(bashio::config 'screen_timeout')
+
+# Ensure SCREEN_TIMEOUT has a valid integer default if the API fails
+SCREEN_TIMEOUT=${SCREEN_TIMEOUT:-600}
 
 # Map rotation values to Wayland transforms
 case $ROTATION_CONFIG in
