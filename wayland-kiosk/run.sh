@@ -92,11 +92,68 @@ if [ -z "$ROTATION_CONFIG" ] || [ "$ROTATION_CONFIG" == "null" ]; then
     ROTATION_CONFIG="normal"
 fi
 # ---------------------------------------------------------
+# DISPLAY FOCUS
+# ---------------------------------------------------------
+# ---------------------------------------------------------
+# READ UI OPTIONS (WITH BULLETPROOF FALLBACKS)
+# ---------------------------------------------------------
+URL=$(bashio::config 'ha_url')
+IGNORE_CERTS=$(bashio::config 'ignore_certificate_errors')
+SCREEN_TIMEOUT=$(bashio::config 'screen_timeout')
 
-# Read rotation config safely with a fallback
+# If the HA API fails or fields are blank, FORCE local frontend default
+if [ -z "$URL" ] || [ "$URL" == "null" ]; then
+    URL="http://127.0.0.1:8123"
+    bashio::log.warning "HA API returned blank URL. Forcing default to http://127.0.0.1:8123"
+fi
+
+if [ -z "$SCREEN_TIMEOUT" ] || [ "$SCREEN_TIMEOUT" == "null" ]; then
+    SCREEN_TIMEOUT=600
+    bashio::log.warning "HA API returned blank timeout. Forcing 600s."
+fi
+
+
+# ---------------------------------------------------------
+# DYNAMIC HARDWARE DISCOVERY (Display & Touch)
+# ---------------------------------------------------------
+ACTIVE_OUTPUT=""
+
+# 1. Dynamically find the active connected monitor (e.g., DP-1, HDMI-A-1)
+for status_file in /sys/class/drm/*/status 2>/dev/null; do
+    if [ -f "$status_file" ] && [ "$(cat "$status_file")" = "connected" ]; then
+        # Convert 'card0-DP-1' to 'DP-1'
+        raw_card=$(echo "$status_file" | cut -d'/' -f5)
+        ACTIVE_OUTPUT=$(echo "$raw_card" | sed 's/^card[0-9]*-//')
+        bashio::log.info "Auto-discovered active display: $ACTIVE_OUTPUT"
+        break
+    fi
+done
+
+# Fallback just in case the check fails
+if [ -z "$ACTIVE_OUTPUT" ]; then
+    ACTIVE_OUTPUT="DP-1"
+fi
+
+# 2. Dynamically find the touchscreen device name (Looking for ILITEK, Touch, etc.)
+if [ -f "/proc/bus/input/devices" ]; then
+    TOUCH_DEVICE=$(grep -i "Name=" /proc/bus/input/devices | grep -i -E "touch|ilitek" | head -n 1 | cut -d'"' -f2)
+fi
+
+# Fallback to your known ILITEK screen if auto-discovery misses
+if [ -z "$TOUCH_DEVICE" ]; then
+    TOUCH_DEVICE="ILITEK ILITEK-TP"
+fi
+
+# 3. Apply the dynamic touch mapping
+export WLR_LIBINPUT_DEVICE_MAP="${TOUCH_DEVICE}:${ACTIVE_OUTPUT}"
+bashio::log.info "Mapped touch input '$TOUCH_DEVICE' -> '$ACTIVE_OUTPUT'"
+
+
+# ---------------------------------------------------------
+# DYNAMIC SCREEN ROTATION
+# ---------------------------------------------------------
 ROTATION_CONFIG=$(bashio::config 'rotate_display')
 
-# Map rotation values for wlr-randr
 case "$ROTATION_CONFIG" in
     "right") ROTATION_DEGREES="90" ;;
     "inverted") ROTATION_DEGREES="180" ;;
@@ -104,20 +161,22 @@ case "$ROTATION_CONFIG" in
     *) ROTATION_DEGREES="normal" ;;
 esac
 
-# Run rotation in the background
+# Run rotation in the background using the auto-discovered ACTIVE_OUTPUT
 if [ "$ROTATION_DEGREES" != "normal" ]; then
-    bashio::log.info "Scheduling screen rotation to ${ROTATION_DEGREES} degrees..."
+    bashio::log.info "Scheduling rotation (${ROTATION_DEGREES}°) for $ACTIVE_OUTPUT..."
     (
         sleep 5
         export WAYLAND_DISPLAY=$(ls /tmp/xdg 2>/dev/null | grep -m 1 "wayland-")
         if [ -n "$WAYLAND_DISPLAY" ]; then
-            wlr-randr --output DP-1 --transform "$ROTATION_DEGREES"
+            wlr-randr --output "$ACTIVE_OUTPUT" --transform "$ROTATION_DEGREES"
         fi
     ) &
 fi
 
-# ... (The rest of your script starting Chromium remains the same) ...
 
+# ---------------------------------------------------------
+# CHROMEIUM RUNTIME
+# ---------------------------------------------------------
 # Build Chromium Ozone flags
 CHROMIUM_FLAGS="--kiosk --no-sandbox --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-infobars --remote-debugging-port=9222 --no-first-run --disable-sync --bwsi"
 
