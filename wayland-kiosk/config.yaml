@@ -33,16 +33,17 @@ ulimits:
 
 # Default User Configuration
 options:
-  ha_url: "http://supervisor/core"
   ha_username: ""
   ha_password: ""
+  ha_url: "http://supervisor/core"
   ha_dashboard: ""
-  browser_refresh: 0
+  browser_refresh: 600
   ha_sidebar: "full"
   ha_theme: ""
   dark_mode: false
-  screen_timeout: 600
+  screen_timeout: 0
   rotate_display: "normal"
+  login_delay: 10
   ignore_certificate_errors: false
 
 # Enforced UI Schema
@@ -58,3 +59,4 @@ schema:
   screen_timeout: int(0,)
   rotate_display: list(normal|left|right|inverted)
   ignore_certificate_errors: bool
+  login_delay: float(0,)
