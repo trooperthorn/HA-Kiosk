@@ -101,12 +101,17 @@ case $ROTATION_CONFIG in
     *) ROTATION_DEGREES="normal" ;;
 esac
 
-# Run rotation in the background (waits 5 seconds for Cage to start)
+# Run rotation in the background
 if [ "$ROTATION_DEGREES" != "normal" ]; then
     bashio::log.info "Scheduling screen rotation to ${ROTATION_DEGREES} degrees..."
     (
         sleep 5
-        wlr-randr --output \* --transform "$ROTATION_DEGREES"
+        
+        # 1. Dynamically find the Wayland socket Cage just created
+        export WAYLAND_DISPLAY=$(ls /tmp/xdg | grep -m 1 "wayland-")
+        
+        # 2. Apply the rotation specifically to your DisplayPort hardware
+        wlr-randr --output DP-1 --transform "$ROTATION_DEGREES"
     ) &
 fi
 
