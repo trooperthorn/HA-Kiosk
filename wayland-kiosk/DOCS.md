@@ -2,6 +2,8 @@
 - VT Binding update
 - Chrome Loaded
 - Touch moved this to full access
+- Rotation and touch rework
+- fallback on my cheap touch if dynamic fails
 
 
 ## A streamlined, hardware-accelerated kiosk integration for Home Assistant Operating System.
