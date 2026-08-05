@@ -1,0 +1,44 @@
+{
+  "configuration": {
+    "ha_url": {
+      "name": "Home Assistant URL",
+      "description": "The URL of the Home Assistant frontend or core instance to display."
+    },
+    "ha_dashboard": {
+      "name": "Dashboard Path",
+      "description": "Optional specific Lovelace dashboard path."
+    },
+    "browser_refresh": {
+      "name": "Browser Refresh Interval",
+      "description": "Time in seconds before refreshing the browser."
+    },
+    "ha_sidebar": {
+      "name": "Sidebar Visibility",
+      "description": "Configure visibility of the Home Assistant sidebar."
+    },
+    "ha_theme": {
+      "name": "Theme Override",
+      "description": "Force a specific theme name."
+    },
+    "dark_mode": {
+      "name": "Dark Mode",
+      "description": "Enable or disable dark mode preference."
+    },
+    "screen_timeout": {
+      "name": "Screen Timeout",
+      "description": "Seconds of inactivity before blanking the display."
+    },
+    "rotate_display": {
+      "name": "Rotate Display",
+      "description": "Screen orientation (normal, right, inverted, left)."
+    },
+    "login_delay": {
+      "name": "Login Delay",
+      "description": "Delay in seconds before attempting automated interactions."
+    },
+    "ignore_certificate_errors": {
+      "name": "Ignore Certificate Errors",
+      "description": "Bypass SSL/TLS certificate warnings for self-hosted instances."
+    }
+  }
+}
