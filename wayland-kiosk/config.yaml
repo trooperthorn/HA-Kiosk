@@ -50,8 +50,8 @@ ulimits:
 
 # Default User Configuration
 options:
-  ha_username: ""
-  ha_password: ""
+#  ha_username: ""
+#  ha_password: ""
   ha_url: "http://127.0.0.1:8123"
   ha_dashboard: "lovelace"
   browser_refresh: 12000
@@ -66,8 +66,8 @@ options:
 # Enforced UI Schema
 schema:
   ha_url: url
-  ha_username: str
-  ha_password: password
+#  ha_username: str
+#  ha_password: password
   ha_dashboard: str?
   browser_refresh: int(0,)
   ha_sidebar: list(full|narrow|none)
