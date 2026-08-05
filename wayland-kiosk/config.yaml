@@ -6,7 +6,7 @@ init: false
 startup: application
 
 url: "https://github.com/trooperthorn/HA-Kiosk"
-
+host_dbus: true
 
 # Network and API Access
 host_network: true
