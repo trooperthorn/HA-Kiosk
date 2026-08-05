@@ -38,13 +38,13 @@ export XDG_RUNTIME_DIR=/tmp/xdg
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
-# Start seatd using /tmp to bypass s6-overlay permission blocks
+# Start seatd using its default /run socket
 bashio::log.info "Starting seat management daemon..."
-export SEATD_SOCK=/tmp/seatd.sock
+export SEATD_SOCK=/run/seatd.sock
 export LIBSEAT_BACKEND=seatd
 
-# -g sets group, -s sets the custom socket path
-seatd -g root -s "$SEATD_SOCK" &
+# Execute seatd without the unrecognized -s flag
+seatd -g root &
 
 # Wait up to 3 seconds for the socket to actually generate
 for i in $(seq 1 10); do
@@ -58,6 +58,7 @@ done
 if [ ! -S "$SEATD_SOCK" ]; then
     bashio::log.error "CRITICAL: seatd failed to create socket!"
 fi
+
 
 # Clean residual display env vars
 unset DISPLAY
