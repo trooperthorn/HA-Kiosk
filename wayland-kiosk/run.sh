@@ -38,13 +38,26 @@ export XDG_RUNTIME_DIR=/tmp/xdg
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
-# Start seatd to manage DRM/GPU access in Docker
+# Start seatd using /tmp to bypass s6-overlay permission blocks
 bashio::log.info "Starting seat management daemon..."
-mkdir -p /run
-seatd -g root &
-export SEATD_SOCK=/run/seatd.sock
+export SEATD_SOCK=/tmp/seatd.sock
 export LIBSEAT_BACKEND=seatd
-sleep 1 # Give seatd a moment to create the socket
+
+# -g sets group, -s sets the custom socket path
+seatd -g root -s "$SEATD_SOCK" &
+
+# Wait up to 3 seconds for the socket to actually generate
+for i in $(seq 1 10); do
+    if [ -S "$SEATD_SOCK" ]; then
+        bashio::log.info "Seatd socket successfully established."
+        break
+    fi
+    sleep 0.3
+done
+
+if [ ! -S "$SEATD_SOCK" ]; then
+    bashio::log.error "CRITICAL: seatd failed to create socket!"
+fi
 
 # Clean residual display env vars
 unset DISPLAY
@@ -52,14 +65,29 @@ unset WAYLAND_DISPLAY
 export WLR_BACKEND=drm
 export WLR_LIBINPUT_NO_DEVICES=1
 
-# Read UI options with fallback defaults
+# ---------------------------------------------------------
+# READ UI OPTIONS (WITH BULLETPROOF FALLBACKS)
+# ---------------------------------------------------------
 URL=$(bashio::config 'ha_url')
 ROTATION_CONFIG=$(bashio::config 'rotate_display')
 IGNORE_CERTS=$(bashio::config 'ignore_certificate_errors')
 SCREEN_TIMEOUT=$(bashio::config 'screen_timeout')
 
-# Ensure SCREEN_TIMEOUT has a valid integer default if the API fails
-SCREEN_TIMEOUT=${SCREEN_TIMEOUT:-600}
+# If the HA API fails or fields are blank, FORCE these default values
+if [ -z "$URL" ] || [ "$URL" == "null" ]; then
+    URL="http://supervisor/core"
+    bashio::log.warning "HA API returned blank URL. Forcing default."
+fi
+
+if [ -z "$SCREEN_TIMEOUT" ] || [ "$SCREEN_TIMEOUT" == "null" ]; then
+    SCREEN_TIMEOUT=600
+    bashio::log.warning "HA API returned blank timeout. Forcing 600s."
+fi
+
+if [ -z "$ROTATION_CONFIG" ] || [ "$ROTATION_CONFIG" == "null" ]; then
+    ROTATION_CONFIG="normal"
+fi
+# ---------------------------------------------------------
 
 # Map rotation values to Wayland transforms
 case $ROTATION_CONFIG in
@@ -69,6 +97,8 @@ case $ROTATION_CONFIG in
     "left") export WLR_OUTPUT_TRANSFORM="270" ;;
     *) export WLR_OUTPUT_TRANSFORM="normal" ;;
 esac
+
+# ... (The rest of your script starting Chromium remains the same) ...
 
 # Build Chromium Ozone flags
 CHROMIUM_FLAGS="--kiosk --no-sandbox --enable-features=UseOzonePlatform --ozone-platform=wayland --disable-infobars --remote-debugging-port=9222"
