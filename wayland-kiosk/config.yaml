@@ -3,23 +3,58 @@ description: "A Wayland-native kiosk dashboard using Cage and Chromium"
 version: "1.0.0"
 slug: "haos_wayland_kiosk"
 init: false
-arch:
-  - aarch64
-  - amd64
-  - armv7
-# Hardware access for Wayland direct rendering
+startup: application
+
+# Network and API Access
+host_network: true
+ingress: true
+hassio_api: true
+homeassistant_api: true
+auth_api: true
+
+# Hardware and System Access
 video: true
 udev: true
+audio: true
+usb: true
+privileged:
+  - SYS_ADMIN
 devices:
   - /dev/input:/dev/input
-network_description: "host"
-host_network: true
-# User configurations
+
+# Storage and Limits
+map:
+  - addon_config:rw
+  - media:rw
+ulimits:
+  nofile:
+    soft: 65536
+    hard: 65536
+
+# Default User Configuration
 options:
   ha_url: "http://supervisor/core"
+  ha_username: ""
+  ha_password: ""
+  ha_dashboard: ""
+  browser_refresh: 0
+  ha_sidebar: "full"
+  ha_theme: ""
+  dark_mode: false
+  screen_timeout: 600
   rotate_display: "normal"
   ignore_certificate_errors: false
+
+# Enforced UI Schema
 schema:
   ha_url: str
+  ha_username: str
+  ha_password: password
+  ha_dashboard: str?
+  browser_refresh: int(0,)
+  ha_sidebar: list(full|narrow|none)
+  ha_theme: str?
+  dark_mode: bool
+  screen_timeout: int(0,)
   rotate_display: list(normal|left|right|inverted)
   ignore_certificate_errors: bool
