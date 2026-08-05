@@ -49,7 +49,7 @@ options:
   ha_sidebar: "full"
   ha_theme: ""
   dark_mode: false
-  screen_timeout: 0
+  screen_timeout: 600
   rotate_display: "normal"
   login_delay: 10
   ignore_certificate_errors: false
