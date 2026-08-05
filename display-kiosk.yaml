@@ -1,0 +1,125 @@
+---
+display-kiosk:
+  # =======================================================
+  # Global Backgrounds & Borders
+  # =======================================================
+  lovelace-background: "#000000"
+  ha-card-background: "#000000"
+  card-background-color: "#000000"
+  sidebar-background-color: "#000000"
+  primary-background-color: "#000000"
+  app-header-background-color: "#000000"
+  app-header-edit-background-color: "#000000"
+
+  ha-dialog-border-radius: "0px"
+  ha-card-border-width: "0px"
+
+  # =======================================================
+  # Section & Grid Spacing (Custom Add)
+  # =======================================================
+  ha-view-sections-column-min-width: "200px"
+  ha-view-sections-column-gap: "2px"
+  ha-view-sections-row-gap: "2px"
+  ha-section-grid-column-gap: "2px"
+  ha-section-grid-row-gap: "2px"
+
+  # =======================================================
+  # Popup / Dialog Kiosk Fixes (No Compositor / Blur)
+  # =======================================================
+  dialog-backdrop-filter: "none"
+  iron-overlay-backdrop-background-color: "rgba(0, 0, 0, 0.9)"
+  iron-overlay-backdrop-opacity: "1"
+  ha-dialog-background: "var(--card-background-color)"
+  dialog-background-color: "var(--card-background-color)"
+  mdc-theme-surface: "var(--card-background-color)"
+  mdc-dialog-box-shadow: "none"
+
+  # =======================================================
+  # Modern Material 3 Dialog Fixes (HA Core 2024+)
+  # =======================================================
+  md-sys-color-surface: "#000000"
+  md-sys-color-surface-container: "#000000"
+  md-sys-color-surface-container-high: "#121212"
+  md-sys-color-surface-container-highest: "#121212"
+  md-sys-color-on-surface: "#DDDDDD"
+  md-sys-color-on-surface-variant: "#BBBBBB"
+  
+  # specific to the more-info dialog header/body
+  ha-more-info-app-toolbar-background-color: "#000000"
+  ha-more-info-app-toolbar-color: "#DDDDDD"
+
+  # =======================================================
+  # Card-Mod Integration
+  # =======================================================
+  card-mod-theme: "minimalist-DisplayPi"
+
+  modes:
+    dark:
+      # Text
+      primary-text-color: "#DDDDDD"
+      
+      # Main interface colors
+      primary-color: "#89B3F8"
+      google-red: "#F18B82"
+      google-green: "#80C994"
+      google-yellow: "#179A5B"
+      google-blue: "#89B3F8"
+      google-violet: "#BB86FC"
+      google-grey: "#BBBBBB"
+      
+      # RGB Values for minimalist templates
+      color-red: "241, 139, 130"
+      color-green: "128, 201, 148"
+      color-yellow: "23, 154, 91"
+      color-blue: "137, 179, 248"
+      color-theme: "221, 221, 221"
+      color-purple: "102, 31, 255"
+      color-grey: "187, 187, 187"
+      color-pink: "233, 30, 99"
+      
+      # Minimalist Background colors
+      color-background-yellow: "var(--color-yellow)"
+      color-background-blue: "var(--color-blue)"
+      color-background-green: "var(--color-green)"
+      color-background-red: "var(--color-red)"
+      color-background-pink: "var(--color-pink)"
+      color-background-purple: "var(--color-purple)"
+      
+      # Minimalist Text colors
+      color-yellow-text: "var(--color-yellow)"
+      color-blue-text: "var(--color-blue)"
+      color-green-text: "var(--color-green)"
+      color-red-text: "var(--color-red)"
+      color-pink-text: "var(--color-pink)"
+      color-purple-text: "var(--color-purple)"
+      opacity-bg: "0.1"
+
+      # Floating button text color
+      mdc-theme-on-secondary: "var(--card-background-color)"
+
+      # Background overrides for dark mode
+      card-background-color: "#000000"
+      primary-background-color: "#000000"
+      secondary-background-color: "#000000"
+
+      # Header
+      app-header-text-color: "var(--primary-text-color)"
+      app-header-background-color: "var(--primary-background-color)"
+      paper-tabs-selection-bar-color: "var(--primary-text-color)"
+
+      # Sidebar
+      sidebar-selected-text-color: "rgb(var(--color-blue))"
+      sidebar-selected-icon-color: "rgb(var(--color-blue))"
+
+      # Slider
+      slider-color: "rgb(var(--color-blue))"
+      slider-bar-color: "rgba(var(--color-blue),0.38)"
+
+      # Card
+      box-shadow: "none"
+
+      # Media player
+      mini-media-player-accent-color: "var(--google-blue)"
+
+      # Journal
+      state-icon-color: "rgb(var(--color-theme))"
