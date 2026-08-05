@@ -152,7 +152,8 @@ bashio::log.info "Mapped touch input '$TOUCH_DEVICE' -> '$ACTIVE_OUTPUT'"
 # ---------------------------------------------------------
 # DYNAMIC SCREEN ROTATION
 # ---------------------------------------------------------
-ROTATION_CONFIG=$(bashio::config 'rotate_display')
+#ROTATION_CONFIG=$(bashio::config 'rotate_display')
+ROTATION_CONFIG="right"
 
 case "$ROTATION_CONFIG" in
     "right") ROTATION_DEGREES="90" ;;
