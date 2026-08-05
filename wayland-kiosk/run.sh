@@ -38,15 +38,14 @@ export XDG_RUNTIME_DIR=/tmp/xdg
 mkdir -p $XDG_RUNTIME_DIR
 chmod 0700 $XDG_RUNTIME_DIR
 
-# Start seatd using its default /run socket
+# Start seatd in headless/non-VT mode to bypass container TTY restrictions
 bashio::log.info "Starting seat management daemon..."
 export SEATD_SOCK=/run/seatd.sock
 export LIBSEAT_BACKEND=seatd
 
-# Execute seatd without the unrecognized -s flag
-seatd -g root &
+seatd -g root -n &
 
-# Wait up to 3 seconds for the socket to actually generate
+# Wait up to 3 seconds for the socket to generate
 for i in $(seq 1 10); do
     if [ -S "$SEATD_SOCK" ]; then
         bashio::log.info "Seatd socket successfully established."
