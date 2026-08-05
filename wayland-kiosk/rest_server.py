@@ -1,3 +1,5 @@
+import os
+import requests
 import shlex
 import logging
 import asyncio
@@ -20,6 +22,21 @@ DANGEROUS_SHELL_TOKENS = [";", "|", "&", ">", "<", "$", "`"]
 # SERVER ROUTING
 # --------------------------------------------------------------------------- #
 ROUTES = {}
+
+# Grab the internal token automatically injected by HA
+SUPERVISOR_TOKEN = os.environ.get('SUPERVISOR_TOKEN')
+
+# Use the internal API URL, not the frontend UI URL
+API_URL = "http://supervisor/core/api/services/light/turn_on"
+
+headers = {
+    "Authorization": f"Bearer {SUPERVISOR_TOKEN}",
+    "Content-Type": "application/json",
+}
+
+# The Python script sends the Bearer token, so it will NOT get a 401 error!
+response = requests.post(API_URL, headers=headers, json={"entity_id": "light.kitchen"})
+
 
 def register_function(name, optional=None, required=None, validators=None):
     """Stores the registered functions into the ROUTES dictionary."""
