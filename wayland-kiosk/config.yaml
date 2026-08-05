@@ -5,6 +5,8 @@ slug: "haos_wayland_kiosk"
 init: false
 startup: application
 
+url: "https://github.com/trooperthorn/HA-Kiosk"
+
 
 # Network and API Access
 host_network: true
@@ -50,20 +52,20 @@ ulimits:
 options:
   ha_username: ""
   ha_password: ""
-  ha_url: "http://supervisor/core"
-  ha_dashboard: ""
+  ha_url: "http://127.0.0.1:8123"
+  ha_dashboard: "lovelace"
   browser_refresh: 600
   ha_sidebar: "full"
   ha_theme: ""
   dark_mode: false
   screen_timeout: 600
-  rotate_display: "normal"
+  rotate_display: "right"
   login_delay: 10
   ignore_certificate_errors: false
 
 # Enforced UI Schema
 schema:
-  ha_url: str
+  ha_url: url
   ha_username: str
   ha_password: password
   ha_dashboard: str?
