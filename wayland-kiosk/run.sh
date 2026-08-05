@@ -77,10 +77,10 @@ ROTATION_CONFIG=$(bashio::config 'rotate_display')
 IGNORE_CERTS=$(bashio::config 'ignore_certificate_errors')
 SCREEN_TIMEOUT=$(bashio::config 'screen_timeout')
 
-# If the HA API fails or fields are blank, FORCE these default values
+# If the HA API fails or fields are blank, FORCE local frontend default
 if [ -z "$URL" ] || [ "$URL" == "null" ]; then
-    URL="http://supervisor/core"
-    bashio::log.warning "HA API returned blank URL. Forcing default."
+    URL="http://127.0.0.1:8123"
+    bashio::log.warning "HA API returned blank URL. Forcing default to http://127.0.0.1:8123"
 fi
 
 if [ -z "$SCREEN_TIMEOUT" ] || [ "$SCREEN_TIMEOUT" == "null" ]; then
@@ -93,8 +93,11 @@ if [ -z "$ROTATION_CONFIG" ] || [ "$ROTATION_CONFIG" == "null" ]; then
 fi
 # ---------------------------------------------------------
 
+# Read rotation config safely with a fallback
+ROTATION_CONFIG=$(bashio::config 'rotate_display')
+
 # Map rotation values for wlr-randr
-case $ROTATION_CONFIG in
+case "$ROTATION_CONFIG" in
     "right") ROTATION_DEGREES="90" ;;
     "inverted") ROTATION_DEGREES="180" ;;
     "left") ROTATION_DEGREES="270" ;;
@@ -106,12 +109,10 @@ if [ "$ROTATION_DEGREES" != "normal" ]; then
     bashio::log.info "Scheduling screen rotation to ${ROTATION_DEGREES} degrees..."
     (
         sleep 5
-        
-        # 1. Dynamically find the Wayland socket Cage just created
-        export WAYLAND_DISPLAY=$(ls /tmp/xdg | grep -m 1 "wayland-")
-        
-        # 2. Apply the rotation specifically to your DisplayPort hardware
-        wlr-randr --output DP-1 --transform "$ROTATION_DEGREES"
+        export WAYLAND_DISPLAY=$(ls /tmp/xdg 2>/dev/null | grep -m 1 "wayland-")
+        if [ -n "$WAYLAND_DISPLAY" ]; then
+            wlr-randr --output DP-1 --transform "$ROTATION_DEGREES"
+        fi
     ) &
 fi
 
