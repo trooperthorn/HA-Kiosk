@@ -1,6 +1,6 @@
 name: "HAOS Wayland Kiosk"
-description: "A Wayland-native kiosk dashboard using Cage and Chromium"
-version: "1.0.1"
+description: "Wayland-native kiosk dashboard using Cage and Chromium"
+version: "1.1"
 slug: "haos_wayland_kiosk"
 init: false
 startup: application
