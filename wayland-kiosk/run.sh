@@ -40,5 +40,21 @@ python3 /app/rest_server.py &
 
 bashio::log.info "Starting Cage with Chromium pointing to: ${URL}"
 
+# Read credentials from the UI
+USERNAME=$(bashio::config 'ha_username')
+PASSWORD=$(bashio::config 'ha_password')
+DELAY=$(bashio::config 'login_delay')
+
+bashio::log.info "Starting background keystroke injector with a ${DELAY}s delay..."
+
+# Background subshell that waits, then types the credentials using wtype
+(
+    sleep "$DELAY"
+    wtype "$USERNAME"
+    wtype -k Tab
+    wtype "$PASSWORD"
+    wtype -k Return
+) &
+
 # Execute Cage and Chromium (This MUST be the final line)
 exec cage -s -- chromium-browser ${CHROMIUM_FLAGS} "${URL}"
