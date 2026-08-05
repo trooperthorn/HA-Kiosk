@@ -21,6 +21,7 @@ privileged:
   - SYS_ADMIN
 devices:
   - /dev/input:/dev/input
+  - /dev/dri:/dev/dri
 
 # Storage and Limits
 map:
@@ -30,6 +31,7 @@ ulimits:
   nofile:
     soft: 65536
     hard: 65536
+
 
 # Default User Configuration
 options:
