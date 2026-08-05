@@ -5,12 +5,18 @@ slug: "haos_wayland_kiosk"
 init: false
 startup: application
 
+
 # Network and API Access
 host_network: true
 ingress: true
 hassio_api: true
 homeassistant_api: true
 auth_api: true
+
+arch:
+  - aarch64
+  - amd64
+  - armv7
 
 # Hardware and System Access
 video: true
