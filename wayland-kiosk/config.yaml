@@ -54,11 +54,11 @@ options:
   ha_password: ""
   ha_url: "http://127.0.0.1:8123"
   ha_dashboard: "lovelace"
-  browser_refresh: 600
-  ha_sidebar: "full"
+  browser_refresh: 12000
+  ha_sidebar: "none"
   ha_theme: ""
-  dark_mode: false
-  screen_timeout: 600
+  dark_mode: true
+  screen_timeout: 0
   rotate_display: "right"
   login_delay: 10
   ignore_certificate_errors: false
