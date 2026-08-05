@@ -145,7 +145,51 @@ if [ -z "$TOUCH_DEVICE" ]; then
 fi
 
 # 3. Apply the dynamic touch mapping
-export WLR_LIBINPUT_DEVICE_MAP="${TOUCH_DEVICE}:${ACTIVE_OUTPUT}"
+# ---------------------------------------------------------
+# DYNAMIC SCREEN & TOUCH ROTATION
+# ---------------------------------------------------------
+ROTATION_CONFIG=$(bashio::config 'rotate_display')
+
+# Map both visual rotation and touch calibration matrices based on UI config
+case "$ROTATION_CONFIG" in
+    "right") 
+        ROTATION_DEGREES="270" 
+        # Swaps X and Y, adjusting for the factory X-inversion
+        TOUCH_MATRIX="0 1 0 1 0 0" 
+        ;;
+    "inverted") 
+        ROTATION_DEGREES="180" 
+        # Inverts Y (since an inverted X flipped 180 degrees results in an inverted Y)
+        TOUCH_MATRIX="1 0 0 0 -1 1" 
+        ;;
+    "left") 
+        ROTATION_DEGREES="90" 
+        # Swaps X and Y, mirroring the opposite direction
+        TOUCH_MATRIX="0 -1 1 -1 0 1" 
+        ;;
+    *) 
+        ROTATION_DEGREES="normal" 
+        # Your known baseline fix (Inverts X only)
+        TOUCH_MATRIX="-1 0 1 0 1 0" 
+        ;;
+esac
+
+# 1. Apply the touch matrix instantly
+export WLR_LIBINPUT_CALIBRATION_MATRIX="$TOUCH_MATRIX"
+bashio::log.info "Applied touch calibration matrix: $TOUCH_MATRIX"
+
+# 2. Run visual rotation in the background
+if [ "$ROTATION_DEGREES" != "normal" ]; then
+    bashio::log.info "Scheduling rotation (${ROTATION_DEGREES}°) for $ACTIVE_OUTPUT..."
+    (
+        sleep 5
+        export WAYLAND_DISPLAY=$(ls /tmp/xdg 2>/dev/null | grep -m 1 "wayland-")
+        if [ -n "$WAYLAND_DISPLAY" ]; then
+            wlr-randr --output "$ACTIVE_OUTPUT" --transform "$ROTATION_DEGREES"
+        fi
+    ) &
+fi
+
 bashio::log.info "Mapped touch input '$TOUCH_DEVICE' -> '$ACTIVE_OUTPUT'"
 
 
@@ -155,10 +199,11 @@ bashio::log.info "Mapped touch input '$TOUCH_DEVICE' -> '$ACTIVE_OUTPUT'"
 #ROTATION_CONFIG=$(bashio::config 'rotate_display')
 ROTATION_CONFIG="right"
 
+# Map rotation values for wlr-randr (Wayland rotates counter-clockwise!)
 case "$ROTATION_CONFIG" in
-    "right") ROTATION_DEGREES="90" ;;
+    "right") ROTATION_DEGREES="270" ;;
     "inverted") ROTATION_DEGREES="180" ;;
-    "left") ROTATION_DEGREES="270" ;;
+    "left") ROTATION_DEGREES="90" ;;
     *) ROTATION_DEGREES="normal" ;;
 esac
 
@@ -173,7 +218,7 @@ if [ "$ROTATION_DEGREES" != "normal" ]; then
         fi
     ) &
 fi
-
+bashio::log.info "Mapped Rotation to input '$ROTATION_CONFIG' -> '$ACTIVE_OUTPUT'"
 
 # ---------------------------------------------------------
 # CHROMEIUM RUNTIME
