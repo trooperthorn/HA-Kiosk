@@ -1,4 +1,3 @@
-import subprocess
 import shlex
 import logging
 import asyncio
@@ -7,6 +6,7 @@ import urllib.error
 import json
 import subprocess
 from typing import Any, Dict
+from aiohttp import web
 
 # Type alias for your payload
 Payload = Dict[str, Any]
@@ -16,10 +16,15 @@ SHORT_TIMEOUT = 5
 ALLOWED_COMMANDS = {"wlr-randr", "wtype", "killall", "swayidle"}
 DANGEROUS_SHELL_TOKENS = [";", "|", "&", ">", "<", "$", "`"]
 
-# Dummy mock for your existing decorators and execute_command helper
-# Replace this with your actual framework's routing logic
-def register_function(*args, **kwargs):
+# --------------------------------------------------------------------------- #
+# SERVER ROUTING
+# --------------------------------------------------------------------------- #
+ROUTES = {}
+
+def register_function(name, optional=None, required=None, validators=None):
+    """Stores the registered functions into the ROUTES dictionary."""
     def decorator(func):
+        ROUTES[name] = func
         return func
     return decorator
 
@@ -161,3 +166,50 @@ async def handle_launch_url(data: Payload) -> dict[str, Any]:
 
     success = await asyncio.to_thread(_send_cdp_request)
     return {"success": success}
+
+# --------------------------------------------------------------------------- #
+# SERVER INITIALIZATION & WATCHDOG EXECUTION
+# --------------------------------------------------------------------------- #
+
+
+async def api_handler(request):
+    """Handles incoming POST requests and routes them to the correct function."""
+    try:
+        data = await request.json()
+        command = data.get("command")
+        
+        if command in ROUTES:
+            # Execute the matched async function
+            result = await ROUTES[command](data)
+            return web.json_response(result)
+        else:
+            return web.json_response({"success": False, "error": f"Unknown command: {command}"}, status=400)
+    except Exception as e:
+        return web.json_response({"success": False, "error": str(e)}, status=500)
+
+async def main():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.info("Starting HAOS-Wayland-Kiosk REST API...")
+    
+    # 1. Start the Chrome Watchdog in the background
+    asyncio.create_task(chromium_watchdog())
+    logging.info("Chromium Watchdog initialized.")
+    
+    # 2. Initialize the Web Server
+    app = web.Application()
+    app.router.add_post('/api', api_handler)
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    # Bind to port 8080
+    site = web.TCPSite(runner, '0.0.0.0', 8080)
+    await site.start()
+    
+    logging.info("API listening on port 8080. Ready for Home Assistant commands.")
+    
+    # Run forever
+    await asyncio.Event().wait()
+
+if __name__ == "__main__":
+    asyncio.run(main())
