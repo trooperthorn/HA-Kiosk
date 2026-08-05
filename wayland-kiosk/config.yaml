@@ -1,0 +1,25 @@
+name: "HAOS Wayland Kiosk"
+description: "A Wayland-native kiosk dashboard using Cage and Chromium"
+version: "1.0.0"
+slug: "haos_wayland_kiosk"
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armv7
+# Hardware access for Wayland direct rendering
+video: true
+udev: true
+devices:
+  - /dev/input:/dev/input
+network_description: "host"
+host_network: true
+# User configurations
+options:
+  ha_url: "http://supervisor/core"
+  rotate_display: "normal"
+  ignore_certificate_errors: false
+schema:
+  ha_url: str
+  rotate_display: list(normal|left|right|inverted)
+  ignore_certificate_errors: bool
