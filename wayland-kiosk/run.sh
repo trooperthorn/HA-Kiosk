@@ -119,7 +119,7 @@ fi
 ACTIVE_OUTPUT=""
 
 # 1. Dynamically find the active connected monitor (e.g., DP-1, HDMI-A-1)
-for status_file in /sys/class/drm/*/status 2>/dev/null; do
+for status_file in /sys/class/drm/*/status; do
     if [ -f "$status_file" ] && [ "$(cat "$status_file")" = "connected" ]; then
         # Convert 'card0-DP-1' to 'DP-1'
         raw_card=$(echo "$status_file" | cut -d'/' -f5)
