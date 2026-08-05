@@ -1,6 +1,7 @@
 # HAOS Wayland Kiosk
 - VT Binding update
-- Chrome Loaded, now lets get touchy
+- Chrome Loaded
+- Touch moved this to full access
 
 
 ## A streamlined, hardware-accelerated kiosk integration for Home Assistant Operating System.
