@@ -61,7 +61,7 @@ options:
   screen_timeout: 0
   rotate_display: "right"
   login_delay: 10
-  ignore_certificate_errors: false
+  ignore_certificate_errors: true
 
 # Enforced UI Schema
 schema:
