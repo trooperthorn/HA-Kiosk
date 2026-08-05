@@ -20,7 +20,8 @@ RUN apk add --no-cache \
     swayidle \
     python3 \
     py3-pip \
-    py3-requests
+    py3-requests \
+    py3-aiohttp
 
 # Copy the execution script and API server into the container
 COPY run.sh /run.sh
