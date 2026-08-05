@@ -5,6 +5,7 @@ import asyncio
 import urllib.request
 import urllib.error
 import json
+import subprocess
 from typing import Any, Dict
 
 # Type alias for your payload
@@ -34,6 +35,35 @@ async def execute_command(cmd_list, timeout=SHORT_TIMEOUT, log_prefix="", allow_
         return {"success": proc.returncode == 0, "stdout": stdout.decode(), "stderr": stderr.decode()}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+#CHROME WATCH
+async def chromium_watchdog():
+    """Polls the CDP endpoint to verify Chromium is not frozen."""
+    failures = 0
+    # Give Chromium 20 seconds to finish its initial boot sequence
+    await asyncio.sleep(20) 
+    
+    while True:
+        try:
+            # Ping the CDP endpoint with a strict 5-second timeout
+            def _ping():
+                req = urllib.request.Request("http://localhost:9222/json")
+                urllib.request.urlopen(req, timeout=5)
+            
+            await asyncio.to_thread(_ping)
+            failures = 0 # Reset counter on success
+            
+        except Exception as e:
+            failures += 1
+            logging.warning(f"Watchdog: Chromium unresponsive ({failures}/3).")
+            
+            if failures >= 3:
+                logging.error("Watchdog: Chromium is frozen! Forcing container restart.")
+                # Killing Cage drops PID 1, stopping the container and triggering the HA Watchdog
+                subprocess.run(["killall", "cage"])
+                break
+                
+        await asyncio.sleep(30)
 
 # --------------------------------------------------------------------------- #
 # WAYLAND API ENDPOINTS
