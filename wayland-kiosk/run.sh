@@ -116,39 +116,53 @@ fi
 # ---------------------------------------------------------
 # DYNAMIC HARDWARE DISCOVERY (Display & Touch)
 # ---------------------------------------------------------
-ACTIVE_OUTPUT=""
+# Define your known static fallbacks here:
+STATIC_DISPLAY="DP-1"
+STATIC_TOUCH="ILITEK ILITEK-TP"
 
-# 1. Dynamically find the active connected monitor (e.g., DP-1, HDMI-A-1)
+ACTIVE_OUTPUT=""
+TOUCH_DEVICE=""
+
+# 1. Attempt to dynamically find the active connected monitor
 for status_file in /sys/class/drm/*/status; do
     if [ -f "$status_file" ] && [ "$(cat "$status_file")" = "connected" ]; then
-        # Convert 'card0-DP-1' to 'DP-1'
         raw_card=$(echo "$status_file" | cut -d'/' -f5)
         ACTIVE_OUTPUT=$(echo "$raw_card" | sed 's/^card[0-9]*-//')
-        bashio::log.info "Auto-discovered active display: $ACTIVE_OUTPUT"
         break
     fi
 done
 
-# Fallback just in case the check fails
-if [ -z "$ACTIVE_OUTPUT" ]; then
-    ACTIVE_OUTPUT="DP-1"
+# If/Else for Display Output
+if [ -n "$ACTIVE_OUTPUT" ]; then
+    bashio::log.info "Auto-discovered active display: $ACTIVE_OUTPUT"
+else
+    ACTIVE_OUTPUT="$STATIC_DISPLAY"
+    bashio::log.warning "Display auto-discovery failed! Falling back to static: $ACTIVE_OUTPUT"
 fi
 
-# 2. Dynamically find the touchscreen device name (Looking for ILITEK, Touch, etc.)
+# 2. Attempt to dynamically find the touchscreen device name
 if [ -f "/proc/bus/input/devices" ]; then
     TOUCH_DEVICE=$(grep -i "Name=" /proc/bus/input/devices | grep -i -E "touch|ilitek" | head -n 1 | cut -d'"' -f2)
 fi
 
-# Fallback to your known ILITEK screen if auto-discovery misses
-if [ -z "$TOUCH_DEVICE" ]; then
-    TOUCH_DEVICE="ILITEK ILITEK-TP"
+# If/Else for Touchscreen
+if [ -n "$TOUCH_DEVICE" ]; then
+    bashio::log.info "Auto-discovered touch device: $TOUCH_DEVICE"
+else
+    TOUCH_DEVICE="$STATIC_TOUCH"
+    bashio::log.warning "Touch auto-discovery failed! Falling back to static: $TOUCH_DEVICE"
 fi
+
+# 3. Apply the final touch mapping
+export WLR_LIBINPUT_DEVICE_MAP="${TOUCH_DEVICE}:${ACTIVE_OUTPUT}"
+bashio::log.info "Mapped touch input '$TOUCH_DEVICE' -> '$ACTIVE_OUTPUT'"
 
 # 3. Apply the dynamic touch mapping
 # ---------------------------------------------------------
 # DYNAMIC SCREEN & TOUCH ROTATION
 # ---------------------------------------------------------
-ROTATION_CONFIG=$(bashio::config 'rotate_display')
+#ROTATION_CONFIG=$(bashio::config 'rotate_display')
+ROTATION_CONFIG="right"
 
 # Map both visual rotation and touch calibration matrices based on UI config
 case "$ROTATION_CONFIG" in
@@ -197,7 +211,7 @@ bashio::log.info "Mapped touch input '$TOUCH_DEVICE' -> '$ACTIVE_OUTPUT'"
 # DYNAMIC SCREEN ROTATION
 # ---------------------------------------------------------
 #ROTATION_CONFIG=$(bashio::config 'rotate_display')
-ROTATION_CONFIG="right"
+
 
 # Map rotation values for wlr-randr (Wayland rotates counter-clockwise!)
 case "$ROTATION_CONFIG" in
